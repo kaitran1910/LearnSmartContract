@@ -20,6 +20,8 @@ beforeEach(async () => {
 
 describe("Inbox", () => {
     it("should deploy a contract", () => {
-        console.log(inbox);
+        // assert.ok makes an assertion that what is
+        // passed into the function is truthy
+        assert.ok(inbox.options.address);
     });
 });
