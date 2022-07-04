@@ -5,6 +5,7 @@
  * mostly used to assert some value is equal to another
  * 
  * - "ganache-cli": for deploying a local test network
+ * do pretty much the same thing as using Remix Editor
  * 
  * - "web3": a library for interacting with the test network
  * (here only use web3 constructor, hence using a capital Web3)
@@ -13,6 +14,12 @@
  * - provider(): a communication layer between web3 library 
  * and some specific ETH network, which is Ganache (the 
  * local test network) in this case
+ * 
+ * - interface: the ABI of the contract, which is the
+ * interface between the contract and the test network
+ * 
+ * - bytecode: the bytecode of the contract, which is
+ * the compiled code of the contract
  */
 const assert = require("assert");
 const ganache = require("ganache-cli");
@@ -35,25 +42,37 @@ beforeEach(async () => {
     // Get a list of all accounts
     accounts = await web3.eth.getAccounts();
 
-    // Use one of those accounts to deploy the contract
+    /**
+     * Use one of those accounts to deploy the contract
+     * 
+     * - web3.eth.Contract(JSON.parse(interface))
+     * teach web3 about what methods a Inbox contract should have
+     * 
+     * - deploy({ data: bytecode, arguments: [INITIAL_MESSAGE] })
+     * tell web3 that we want to deploy a new copy of this Inbox contract
+     * 
+     * - send({ from: accounts[0], gas: "1000000" })
+     * instruct web3 to send out a transaction from the first account
+     * to create this contract, with a gas limit of 1000000
+     */
     inbox = await new web3.eth.Contract(JSON.parse(interface))
         .deploy({ data: bytecode, arguments: [INITIAL_MESSAGE] })
         .send({ from: accounts[0], gas: "1000000" });
 });
 
 describe("Inbox", () => {
-    it("should deploy a contract", () => {
+    it("deploy a contract", () => {
         // assert.ok makes an assertion of what is
         // passed into the function is truthy
         assert.ok(inbox.options.address);
     });
 
-    it("should have a default message", async () => {
+    it("have a default message", async () => {
         const message = await inbox.methods.message().call();
         assert.equal(message, INITIAL_MESSAGE);
     });
 
-    it("should be able to change the message", async () => {
+    it("can change the message", async () => {
         await inbox.methods.setMessage(NEW_MESSAGE).send({ from: accounts[0] });
         const message = await inbox.methods.message().call();
         assert.equal(message, NEW_MESSAGE);
